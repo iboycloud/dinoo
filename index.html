@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terima Kasih, Sayang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Plus+Jakarta+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+            overflow: hidden;
+            transition: background-color 2s ease;
+        }
+
+        /* Overlay Awal */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease;
+        }
+
+        .btn-play {
+            padding: 18px 45px;
+            font-size: 14px;
+            letter-spacing: 4px;
+            background: #ffffff;
+            border: 2px solid #ffb7c5;
+            cursor: pointer;
+            color: #ffb7c5;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-play:hover { background: #ffb7c5; color: white; transform: scale(1.05); }
+
+        /* Konten */
+        .content {
+            opacity: 0;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            visibility: hidden;
+            transition: opacity 2s ease;
+        }
+
+        video { width: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+        #text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #444;
+            margin-top: 40px;
+            min-height: 80px;
+        }
+
+        .particle {
+            position: fixed;
+            top: -20px;
+            pointer-events: none;
+            animation: fall linear forwards;
+            z-index: 10;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        body.akhir-hitam { background-color: #000 !important; }
+        
+        #final-area {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 85%;
+            z-index: 10001;
+            display: none;
+        }
+
+        #pesan-akhir {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #fff;
+            min-height: 120px;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="vnAwal" src="suara.mp3"></audio>
+
+    <div id="overlay">
+        <p style="margin-bottom: 25px; font-size: 11px; letter-spacing: 3px; color: #aaa;">KADO KECIL UNTUKMU</p>
+        <button class="btn-play" id="startBtn">BUKA PESAN</button>
+    </div>
+
+    <div class="content" id="mainContent">
+        <video id="videoKita" playsinline>
+            <source src="kita.mp4" type="video/mp4">
+        </video>
+        <p id="text"></p>
+    </div>
+
+    <div id="final-area">
+        <div id="pesan-akhir"></div>
+        <p style="color: #ffb7c5; margin-top: 20px; font-size: 14px; opacity: 0; animation: fadeIn 2s forwards 4s;">∞ Bersamamu Lagi ∞</p>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoKita');
+        const vn = document.getElementById('vnAwal');
+        const startBtn = document.getElementById('startBtn');
+        const overlay = document.getElementById('overlay');
+        const lyricDisplay = document.getElementById('text');
+        const finalArea = document.getElementById('final-area');
+        const pesanAkhir = document.getElementById('pesan-akhir');
+
+        // Lirik tetap (It's You)
+        const listLirik = [
+            { detik: 0, kata: "I'm so scared to fall in love..." },
+            { detik: 3, kata: "But if it's you, then I'll try." },
+            { detik: 5, kata: "It's you..." },
+            { detik: 10, kata: "Always you." },
+            { detik: 13, kata: "I know it's gonna be you." }
+        ];
+
+        function createParticle() {
+            const symbols = ['❤', '⭐', '🌸', '∞'];
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            p.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            p.style.color = '#ffb7c5';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 6000);
+        }
+
+        startBtn.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            vn.play();
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                document.getElementById('mainContent').style.visibility = 'visible';
+                document.getElementById('mainContent').style.opacity = '1';
+                video.play();
+                setInterval(createParticle, 400);
+            }, 1000);
+        });
+
+        video.addEventListener('timeupdate', () => {
+            let skrg = video.currentTime;
+            let lirikAktif = listLirik.findLast(item => skrg >= item.detik);
+            if (lirikAktif && lyricDisplay.innerText !== lirikAktif.kata) {
+                lyricDisplay.innerText = lirikAktif.kata;
+            }
+        });
+
+        video.onended = () => {
+            document.body.classList.add('akhir-hitam');
+            document.getElementById('mainContent').style.opacity = '0';
+            
+            setTimeout(() => {
+                finalArea.style.display = 'block';
+                // PESAN TERIMA KASIH (Typing Effect)
+                const teks = "Terima kasih sudah memilih untuk kembali. Aku janji kali ini akan menjaga hatimu jauh lebih baik dari sebelumnya. I love you, always.";
+                let j = 0;
+                function ngetik() {
+                    if (j < teks.length) {
+                        pesanAkhir.innerHTML += teks.charAt(j);
+                        j++;
+                        setTimeout(ngetik, 80);
+                    }
+                }
+                ngetik();
+            }, 1500);
+        };
+    </script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</body>
+</html>
